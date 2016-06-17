@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/tomato.png</file>
+        <file>resources/tomato_mono_black.png</file>
+        <file>resources/tomato_desat.png</file>
+        <file>resources/tomato_blue.png</file>
+        <file>resources/tomato_green.png</file>
+    </qresource>
+</RCC>
