@@ -47,23 +47,25 @@ private slots:
 	void	doShowPrefs();
 	void	doQuit();
 
-	void on_pomodoroToLongBreakSpinner_valueChanged(int arg1);
-	void on_longBreakLengthSlider_valueChanged(int value);
-	void on_shortBreakLengthSlider_valueChanged(int value);
-	void on_pomodoroLengthSlider_valueChanged(int value);
+	void	on_pomodoroToLongBreakSpinner_valueChanged(int arg1);
+	void	on_longBreakLengthSlider_valueChanged(int value);
+	void	on_shortBreakLengthSlider_valueChanged(int value);
+	void	on_pomodoroLengthSlider_valueChanged(int value);
 
-	void on_pomodoroLengthSlider_sliderPressed();
-	void on_pomodoroLengthSlider_sliderReleased();
+	void	on_pomodoroLengthSlider_sliderPressed();
+	void	on_pomodoroLengthSlider_sliderReleased();
 
-	void on_shortBreakLengthSlider_sliderPressed();
-	void on_shortBreakLengthSlider_sliderReleased();
+	void	on_shortBreakLengthSlider_sliderPressed();
+	void	on_shortBreakLengthSlider_sliderReleased();
 
-	void on_longBreakLengthSlider_sliderPressed();
-	void on_longBreakLengthSlider_sliderReleased();
+	void	on_longBreakLengthSlider_sliderPressed();
+	void	on_longBreakLengthSlider_sliderReleased();
 
-	void on_playSoundCombo_currentIndexChanged(const QString &arg1);
+	void	on_playSoundCombo_currentIndexChanged(const QString &item);
 
-	void on_playSoundCheck_toggled(bool checked);
+	void	on_playSoundCheck_toggled(bool checked);
+
+	void	on_displayNotificationsCheck_toggled(bool checked);
 
 protected:
 	bool	event(QEvent* event);
@@ -84,6 +86,8 @@ private:
 
 	bool			sound_enabled;
 	QString			sound_name;
+
+	bool			notifications_enabled;
 
 	QTimer*			timer;
 	TimerType		timer_type;

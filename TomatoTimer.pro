@@ -17,13 +17,11 @@ TARGET = TomatoTimer
 
 ICON = "resources/icon.icns"
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
-    sliderclicklabel.cpp
+SOURCES += main.cpp \
+        mainwindow.cpp
 
 HEADERS  += mainwindow.h \
-    notifications/notifications.h \
-    sliderclicklabel.h \
+    notifications/notifications.h
     systemsounds/systemsounds.h
 
 FORMS    += mainwindow.ui

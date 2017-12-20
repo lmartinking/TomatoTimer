@@ -123,7 +123,7 @@ void MainWindow::loadSettings()
 	sound_enabled = settings->value("sound_enabled", true).toBool();
 	sound_name = settings->value("sound_name", "").toString();
 
-	qDebug() << "sound_name" << sound_name;
+	notifications_enabled = settings->value("notifications_enabled", true).toBool();
 }
 
 void MainWindow::saveSettings()
@@ -137,6 +137,8 @@ void MainWindow::saveSettings()
 
 	settings->setValue("sound_enabled", sound_enabled);
 	settings->setValue("sound_name", sound_name);
+
+	settings->setValue("notifications_enabled", notifications_enabled);
 
 	settings->sync();
 }
@@ -182,8 +184,11 @@ void MainWindow::doTimerStart()
 
 	if (message.length())
 	{
-		ShowNotification("Tomato Timer", nullptr, message.toLocal8Bit().data());
-		//tray_icon->showMessage("Tomato Timer", message, QSystemTrayIcon::Information, 5000);
+		if (notifications_enabled)
+			ShowNotification("Tomato Timer", nullptr, message.toLocal8Bit().data());
+
+		if (sound_enabled)
+			PlaySystemSound(sound_name);
 	}
 }
 
@@ -247,6 +252,8 @@ void MainWindow::doShowPrefs()
 	on_shortBreakLengthSlider_sliderReleased();
 
 	this->ui->playSoundCheck->setChecked(sound_enabled);
+
+	this->ui->displayNotificationsCheck->setChecked(notifications_enabled);
 
 	this->show();
 	this->raise();
@@ -364,4 +371,9 @@ void MainWindow::on_playSoundCheck_toggled(bool checked)
 {
 	ui->playSoundCombo->setEnabled(checked);
 	sound_enabled = checked;
+}
+
+void MainWindow::on_displayNotificationsCheck_toggled(bool checked)
+{
+	notifications_enabled = checked;
 }
