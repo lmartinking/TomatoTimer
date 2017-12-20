@@ -1,15 +1,18 @@
-#include "mainwindow.h"
 #include <QApplication>
 #include <QAbstractNativeEventFilter>
 #include <QDebug>
 #include <QWindow>
 
-#include "notifications.h"
+#include <QTranslator>
+#include <QLibraryInfo>
+
+#include "mainwindow.h"
+
 
 class TotatoTimeApplication : public QApplication
 {
 public:
-	TotatoTimeApplication(int argc, char* argv[]) : QApplication(argc, argv) {};
+	TotatoTimeApplication(int argc, char* argv[]) : QApplication(argc, argv) {}
 
 protected:
 	void customEvent(QEvent* e)
@@ -27,6 +30,15 @@ int main(int argc, char *argv[])
 {
 	TotatoTimeApplication a(argc, argv);
 	a.setWindowIcon(QIcon(":/resources/tomato.png"));
+
+	QTranslator qtTranslator;
+	qtTranslator.load("qt_" + QLocale::system().name(),
+	QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+	a.installTranslator(&qtTranslator);
+
+	QTranslator appTranslator;
+	appTranslator.load(":/languages/en.qm");
+	a.installTranslator(&appTranslator);
 
 	MainWindow w;
 
