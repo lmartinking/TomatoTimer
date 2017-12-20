@@ -10,6 +10,10 @@
 #include "notifications.h"
 
 
+NotificationEvent::NotificationEvent() : QEvent(NOTIFICATION_EVENT), type(NONE) {}
+
+NotificationEvent::NotificationEvent(QUuid uuid, NotificationEvent::ActionType typ) : QEvent(NOTIFICATION_EVENT), id(uuid), type(typ) {}
+
 NotificationEvent::~NotificationEvent()
 {
 }
@@ -19,14 +23,13 @@ NotificationEvent::~NotificationEvent()
 @end
 
 
-QUuid ShowNotification(const char* title, const char* subtitle, const char* message,
-					  const char* actionButton,
-					  const char* otherButton,
-					  const char* contentImagePath,
-					  const char* indentityImagePath)
+
+QUuid ShowNotification(const QString& title, const QString& subtitle, const QString& message,
+					   const QString& actionButton, const QString& otherButton,
+					   const QString& contentImagePath, const QString& indentityImagePath)
 {
 	static NotificationCenterDelegate* delegate = [[NotificationCenterDelegate alloc] init];
-	static NSString *identifier = [NSString stringWithUTF8String:"com.irrationalidiom.TomatoTimer.Noficiation"];
+	static NSString *identifier = [NSString stringWithUTF8String:"com.irrationalidiom.TomatoTimer.Notification"];
 
 	QUuid notification_id = QUuid::createUuid();
 
@@ -34,7 +37,7 @@ QUuid ShowNotification(const char* title, const char* subtitle, const char* mess
 	notification.identifier = [NSString stringWithUTF8String:notification_id.toString().toUtf8().data()];
 
 	// Content Image
-	if (contentImagePath)
+	if (! contentImagePath.isEmpty())
 	{
 		QFile img_file(contentImagePath);
 		if (img_file.open(QFile::ReadOnly))
@@ -48,7 +51,7 @@ QUuid ShowNotification(const char* title, const char* subtitle, const char* mess
 	}
 
 	// NOTE: Private API
-	if (indentityImagePath)
+	if (! indentityImagePath.isEmpty())
 	{
 		QFile img_file(indentityImagePath);
 		if (img_file.open(QFile::ReadOnly))
@@ -61,30 +64,30 @@ QUuid ShowNotification(const char* title, const char* subtitle, const char* mess
 		}
 	}
 
-	if (title)
+	if (! title.isEmpty())
 	{
-		notification.title = [NSString stringWithUTF8String:title];
+		notification.title = title.toNSString();
 	}
 
-	if (message)
+	if (! message.isEmpty())
 	{
-		notification.informativeText = [NSString stringWithUTF8String:message];
+		notification.informativeText = message.toNSString();
 	}
 
-	if (subtitle)
+	if (! subtitle.isEmpty())
 	{
-		notification.subtitle = subtitle ? [NSString stringWithUTF8String:subtitle] : nil;
+		notification.subtitle = subtitle.toNSString();
 	}
 
-	if (actionButton)
+	if (! actionButton.isEmpty())
 	{
 		notification.hasActionButton = YES;
-		notification.actionButtonTitle = [NSString stringWithUTF8String:actionButton];
+		notification.actionButtonTitle = actionButton.toNSString();
 	}
 
-	if (otherButton)
+	if (! otherButton.isEmpty())
 	{
-		notification.otherButtonTitle = [NSString stringWithUTF8String:otherButton];
+		notification.otherButtonTitle = otherButton.toNSString();
 	}
 
 	notification.soundName = nil;
@@ -110,13 +113,37 @@ QUuid ShowNotification(const char* title, const char* subtitle, const char* mess
 - (void)userNotificationCenter:(NSUserNotificationCenter *)center
 		didDeliverNotification:(NSUserNotification *)notification
 {
-	qDebug() << "did deliver notification";
+	QUuid uuid;
+	if (notification.identifier)
+	{
+		uuid = QUuid(QString::fromNSString(notification.identifier));
+	}
+
+	qDebug() << "did deliver notification: " << uuid;
+
+	NotificationEvent* e = new NotificationEvent(uuid, NotificationEvent::NOTIFICATION_DELIVERED);
+	CopyContext(e, notification);
+
+	QApplication* app = static_cast<QApplication*>(QApplication::instance());
+	app->postEvent(app, e);
 }
 
 - (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center
 	 shouldPresentNotification:(NSUserNotification *)notification
 {
 	return YES;
+}
+
+void CopyContext(NotificationEvent* e, NSUserNotification* notification)
+{
+	Q_ASSERT(e); Q_ASSERT(notification);
+
+	e->context.title = notification.title ? QString::fromNSString(notification.title) : "";
+	e->context.subtitle = notification.subtitle ? QString::fromNSString(notification.subtitle) : "";
+	e->context.message = notification.informativeText ? QString::fromNSString(notification.informativeText) : "";
+
+	e->context.otherButton = notification.otherButtonTitle ? QString::fromNSString(notification.otherButtonTitle) : "";
+	e->context.actionButton = notification.actionButtonTitle ? QString::fromNSString(notification.actionButtonTitle) : "";
 }
 
 - (void)userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification
@@ -141,16 +168,9 @@ QUuid ShowNotification(const char* title, const char* subtitle, const char* mess
 	}
 
 	NotificationEvent* e = new NotificationEvent(uuid, typ);
+	CopyContext(e, notification);
 
-	e->context.title = notification.title ? QString::fromNSString(notification.title) : "";
-	e->context.subtitle = notification.subtitle ? QString::fromNSString(notification.subtitle) : "";
-	e->context.message = notification.informativeText ? QString::fromNSString(notification.informativeText) : "";
-
-	e->context.otherButton = notification.otherButtonTitle ? QString::fromNSString(notification.otherButtonTitle) : "";
-	e->context.actionButton = notification.actionButtonTitle ? QString::fromNSString(notification.actionButtonTitle) : "";
-
-	// Send it!
-	QApplication* app = (QApplication*)QApplication::instance();
+	QApplication* app = static_cast<QApplication*>(QApplication::instance());
 	app->postEvent(app, e);
 }
 
