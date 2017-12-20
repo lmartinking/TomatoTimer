@@ -7,6 +7,7 @@
 #include <QSettings>
 #include <QTimer>
 #include <QMenu>
+#include <QUuid>
 
 namespace Ui {
 	class MainWindow;
@@ -31,6 +32,7 @@ public:
 private:
 	void	buildMenu();
 	void	buildTrayIcon();
+	void	buildSounds();
 
 	void	loadSettings();
 	void	saveSettings();
@@ -44,6 +46,24 @@ private slots:
 
 	void	doShowPrefs();
 	void	doQuit();
+
+	void on_pomodoroToLongBreakSpinner_valueChanged(int arg1);
+	void on_longBreakLengthSlider_valueChanged(int value);
+	void on_shortBreakLengthSlider_valueChanged(int value);
+	void on_pomodoroLengthSlider_valueChanged(int value);
+
+	void on_pomodoroLengthSlider_sliderPressed();
+	void on_pomodoroLengthSlider_sliderReleased();
+
+	void on_shortBreakLengthSlider_sliderPressed();
+	void on_shortBreakLengthSlider_sliderReleased();
+
+	void on_longBreakLengthSlider_sliderPressed();
+	void on_longBreakLengthSlider_sliderReleased();
+
+	void on_playSoundCombo_currentIndexChanged(const QString &arg1);
+
+	void on_playSoundCheck_toggled(bool checked);
 
 protected:
 	bool	event(QEvent* event);
@@ -61,6 +81,9 @@ private:
 	int				pomodoro_per_long_break;
 
 	int				pomodoro_count;
+
+	bool			sound_enabled;
+	QString			sound_name;
 
 	QTimer*			timer;
 	TimerType		timer_type;

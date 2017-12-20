@@ -1,9 +1,13 @@
 #include <QDebug>
 #include <QSettings>
+#include <QMetaEnum>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+
 #include "notifications/notifications.h"
+#include "systemsounds/systemsounds.h"
+
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -20,19 +24,20 @@ MainWindow::MainWindow(QWidget *parent) :
 	timer_type = TimerType::POMODORO;
 	connect(timer, &QTimer::timeout, this, &MainWindow::onTimerTimeout);
 
-	loadSettings();
-
 	ui->setupUi(this);
+
+	loadSettings();
 
 	buildMenu();
 	buildTrayIcon();
+	buildSounds();
 
 	tray_icon->show();
 
 	qDebug() << "timer: " << timer;
 	qDebug() << "timer type: " << timer_type;
 
-	ShowNotification("Tomato Timer", nullptr, "Tomato Timer is now running");
+	ShowNotification("Tomato Timer", "", "Tomato Timer is now running");
 }
 
 MainWindow::~MainWindow()
@@ -81,6 +86,31 @@ void MainWindow::buildTrayIcon()
 	this->tray_icon = ico;
 }
 
+void MainWindow::buildSounds()
+{
+	QStringList sounds = GetSystemSoundNames();
+
+	ui->playSoundCombo->blockSignals(true);
+	ui->playSoundCombo->addItems(sounds);
+
+	if (sound_name == "")
+	{
+		ui->playSoundCombo->setCurrentIndex(0);
+	}
+	else
+	{
+		auto index = sounds.indexOf(sound_name);
+		ui->playSoundCombo->setCurrentIndex(index);
+		qDebug() << "sound index" << index;
+	}
+
+	ui->playSoundCombo->blockSignals(false);
+
+	ui->playSoundCheck->setChecked(sound_enabled);
+	ui->playSoundCombo->setEnabled(sound_enabled);
+
+}
+
 void MainWindow::loadSettings()
 {
 	qDebug() << "load settings";
@@ -88,8 +118,12 @@ void MainWindow::loadSettings()
 	pomodoro_duration = settings->value("pomodoro_duration", 25).toInt();
 	short_break_duration = settings->value("short_break_duration", 5).toInt();
 	long_break_duration = settings->value("long_break_duration", 15).toInt();
+	pomodoro_per_long_break = settings->value("pomodoro_per_long_break", 4).toInt();
 
-	// TODO current timer state
+	sound_enabled = settings->value("sound_enabled", true).toBool();
+	sound_name = settings->value("sound_name", "").toString();
+
+	qDebug() << "sound_name" << sound_name;
 }
 
 void MainWindow::saveSettings()
@@ -99,8 +133,10 @@ void MainWindow::saveSettings()
 	settings->setValue("pomodoro_duration", pomodoro_duration);
 	settings->setValue("short_break_duration", short_break_duration);
 	settings->setValue("long_break_duration", long_break_duration);
+	settings->setValue("pomodoro_per_long_break", pomodoro_per_long_break);
 
-	// TODO current timer state
+	settings->setValue("sound_enabled", sound_enabled);
+	settings->setValue("sound_name", sound_name);
 
 	settings->sync();
 }
@@ -139,6 +175,7 @@ void MainWindow::doTimerStart()
 
 	if (interval)
 	{
+		qDebug() << "interval: " << interval;
 		timer->setSingleShot(true);
 		timer->start(interval * 60 * 1000);
 	}
@@ -199,14 +236,20 @@ void MainWindow::onTimerTimeout()
 
 void MainWindow::doShowPrefs()
 {
-	if (this->isVisible())
-	{
-		this->raise();
-	}
-	else
-	{
-		this->show();
-	}
+	this->ui->shortBreakLengthSlider->setValue(short_break_duration);
+	this->ui->longBreakLengthSlider->setValue(long_break_duration);
+	this->ui->pomodoroLengthSlider->setValue(pomodoro_duration);
+
+	this->ui->pomodoroToLongBreakSpinner->setValue(pomodoro_per_long_break);
+
+	on_longBreakLengthSlider_sliderReleased();
+	on_pomodoroLengthSlider_sliderReleased();
+	on_shortBreakLengthSlider_sliderReleased();
+
+	this->ui->playSoundCheck->setChecked(sound_enabled);
+
+	this->show();
+	this->raise();
 }
 
 void MainWindow::doQuit()
@@ -218,7 +261,7 @@ void MainWindow::doQuit()
 
 bool MainWindow::event(QEvent* event)
 {
-	qDebug() << "main window event: " << event->type();
+	//qDebug() << "main window event: " << event->type();
 	return QMainWindow::event(event);
 }
 
@@ -230,9 +273,95 @@ void MainWindow::customEvent(QEvent* event)
 
 	if (event->type() == NOTIFICATION_EVENT)
 	{
-		NotificationEvent* e = (NotificationEvent*)event;
+		NotificationEvent* e = static_cast<NotificationEvent*>(event);
 
 		qDebug() << "NotificationEvent" << e->context.title << e->context.subtitle << e->context.message;
 		qDebug() << "NofificationEvent buttons" << e->context.actionButton << e->context.otherButton;
+		qDebug() << "NotificationEvent type" << e->type;
 	}
+}
+
+/*
+ * Preferences - Timer Tab
+ */
+
+// ---
+
+void MainWindow::on_pomodoroLengthSlider_valueChanged(int value)
+{
+	this->ui->pomodoroLengthValueLbl->setText(tr("%n minute(s)", "", value));
+}
+
+void MainWindow::on_pomodoroLengthSlider_sliderPressed()
+{
+	this->ui->pomodoroLengthValueLbl->show();
+}
+
+void MainWindow::on_pomodoroLengthSlider_sliderReleased()
+{
+	this->ui->pomodoroLengthValueLbl->hide();
+}
+
+// ---
+
+void MainWindow::on_shortBreakLengthSlider_valueChanged(int value)
+{
+	this->ui->shortBreakLengthValueLbl->setText(tr("%n minute(s)", "", value));
+}
+
+void MainWindow::on_shortBreakLengthSlider_sliderPressed()
+{
+	this->ui->shortBreakLengthValueLbl->show();
+}
+
+void MainWindow::on_shortBreakLengthSlider_sliderReleased()
+{
+	this->ui->shortBreakLengthValueLbl->hide();
+}
+
+// ---
+
+void MainWindow::on_longBreakLengthSlider_valueChanged(int value)
+{
+	this->ui->longBreakLengthValueLbl->setText(tr("%n minute(s)", "", value));
+}
+
+void MainWindow::on_longBreakLengthSlider_sliderPressed()
+{
+	this->ui->longBreakLengthValueLbl->show();
+}
+
+void MainWindow::on_longBreakLengthSlider_sliderReleased()
+{
+	this->ui->longBreakLengthValueLbl->hide();
+}
+
+// ---
+
+
+void MainWindow::on_pomodoroToLongBreakSpinner_valueChanged(int value)
+{
+	pomodoro_per_long_break = value;
+}
+
+/*
+ * Preferences - Notifications Tab
+ */
+
+void MainWindow::on_playSoundCombo_currentIndexChanged(const QString &item)
+{
+	sound_name = item;
+
+	qDebug() << "sound name changed" << sound_name;
+
+	if (sound_enabled)
+	{
+		PlaySystemSound(sound_name);
+	}
+}
+
+void MainWindow::on_playSoundCheck_toggled(bool checked)
+{
+	ui->playSoundCombo->setEnabled(checked);
+	sound_enabled = checked;
 }
