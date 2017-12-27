@@ -465,7 +465,7 @@
          <string>Display visual notifications</string>
         </property>
        </widget>
-       <widget class="QCheckBox" name="bounceIconCheck">
+       <widget class="QCheckBox" name="blinkIconCheck">
         <property name="geometry">
          <rect>
           <x>130</x>
@@ -475,7 +475,7 @@
          </rect>
         </property>
         <property name="text">
-         <string>Bounce icon in the Dock</string>
+         <string>Blink menu bar icon</string>
         </property>
        </widget>
        <widget class="QComboBox" name="playSoundCombo">

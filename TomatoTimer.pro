@@ -39,4 +39,3 @@ mac {
         notifications/notifications_osx.mm \
         systemsounds/systemsounds_osx.mm
 }
-

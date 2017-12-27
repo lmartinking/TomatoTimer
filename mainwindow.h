@@ -43,6 +43,7 @@ private slots:
 	void	doTimerPause();
 
 	void	onTimerTimeout();
+	void	onBlinkTimerTimeout();
 
 	void	doShowPrefs();
 	void	doQuit();
@@ -62,10 +63,9 @@ private slots:
 	void	on_longBreakLengthSlider_sliderReleased();
 
 	void	on_playSoundCombo_currentIndexChanged(const QString &item);
-
 	void	on_playSoundCheck_toggled(bool checked);
-
 	void	on_displayNotificationsCheck_toggled(bool checked);
+	void	on_blinkIconCheck_toggled(bool checked);
 
 protected:
 	bool	event(QEvent* event);
@@ -91,6 +91,12 @@ private:
 
 	QTimer*			timer;
 	TimerType		timer_type;
+
+	bool			blink_enabled;
+	QTimer*			blink_timer;
+	bool			blink;
+	int				blink_count;
+	QIcon			blink_icon[2];
 
 	QSettings*		settings;
 };

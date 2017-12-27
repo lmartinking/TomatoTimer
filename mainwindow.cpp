@@ -24,6 +24,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	timer_type = TimerType::POMODORO;
 	connect(timer, &QTimer::timeout, this, &MainWindow::onTimerTimeout);
 
+	blink_timer = new QTimer(this);
+	connect(blink_timer, &QTimer::timeout, this, &MainWindow::onBlinkTimerTimeout);
+
 	ui->setupUi(this);
 
 	loadSettings();
@@ -124,6 +127,8 @@ void MainWindow::loadSettings()
 	sound_name = settings->value("sound_name", "").toString();
 
 	notifications_enabled = settings->value("notifications_enabled", true).toBool();
+
+	blink_enabled = settings->value("blink_enabled", true).toBool();
 }
 
 void MainWindow::saveSettings()
@@ -139,6 +144,8 @@ void MainWindow::saveSettings()
 	settings->setValue("sound_name", sound_name);
 
 	settings->setValue("notifications_enabled", notifications_enabled);
+
+	settings->setValue("blink_enabled", blink_enabled);
 
 	settings->sync();
 }
@@ -171,9 +178,11 @@ void MainWindow::doTimerStart()
 		message = "Time for a longer break";
 	}
 
-	interval = 1; // FUDGE
+	if (interval) interval = 1; // FUDGE
 
 	tray_icon->setIcon(QIcon(icon));
+	blink_icon[0] = QIcon(icon);
+	blink_icon[1] = QIcon(":/resources/tomato_desat_trans.png");
 
 	if (interval)
 	{
@@ -189,6 +198,14 @@ void MainWindow::doTimerStart()
 
 		if (sound_enabled)
 			PlaySystemSound(sound_name);
+
+		if (blink_enabled)
+		{
+			blink_count = 0;
+			blink_timer->setInterval(1000);
+			blink_timer->setSingleShot(false);
+			blink_timer->start();
+		}
 	}
 }
 
@@ -239,6 +256,22 @@ void MainWindow::onTimerTimeout()
 	doTimerStart();
 }
 
+void MainWindow::onBlinkTimerTimeout()
+{
+	blink_count++;
+
+	if (blink_count < 10)
+	{
+		blink = !blink;
+		tray_icon->setIcon(blink_icon[blink ? 1 : 0]);
+	}
+	else
+	{
+		blink_timer->stop();
+		tray_icon->setIcon(blink_icon[0]);
+	}
+}
+
 void MainWindow::doShowPrefs()
 {
 	this->ui->shortBreakLengthSlider->setValue(short_break_duration);
@@ -254,6 +287,8 @@ void MainWindow::doShowPrefs()
 	this->ui->playSoundCheck->setChecked(sound_enabled);
 
 	this->ui->displayNotificationsCheck->setChecked(notifications_enabled);
+
+	this->ui->blinkIconCheck->setChecked(blink_enabled);
 
 	this->show();
 	this->raise();
@@ -379,4 +414,9 @@ void MainWindow::on_playSoundCheck_toggled(bool checked)
 void MainWindow::on_displayNotificationsCheck_toggled(bool checked)
 {
 	notifications_enabled = checked;
+}
+
+void MainWindow::on_blinkIconCheck_toggled(bool checked)
+{
+	blink_enabled = checked;
 }
