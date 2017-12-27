@@ -6,5 +6,6 @@
         <file>resources/tomato_blue.png</file>
         <file>resources/tomato_green.png</file>
         <file>languages/en.qm</file>
+        <file>resources/tomato_desat_trans.png</file>
     </qresource>
 </RCC>
