@@ -88,12 +88,12 @@ void MainWindow::buildTrayIcon()
 
 void MainWindow::buildSounds()
 {
-	QStringList sounds = GetSystemSoundNames();
+	auto sounds = GetSystemSoundNames();
 
 	ui->playSoundCombo->blockSignals(true);
 	ui->playSoundCombo->addItems(sounds);
 
-	if (sound_name == "")
+	if (sound_name.isEmpty())
 	{
 		ui->playSoundCombo->setCurrentIndex(0);
 	}
@@ -297,6 +297,7 @@ void MainWindow::customEvent(QEvent* event)
 void MainWindow::on_pomodoroLengthSlider_valueChanged(int value)
 {
 	this->ui->pomodoroLengthValueLbl->setText(tr("%n minute(s)", "", value));
+	pomodoro_duration = value;
 }
 
 void MainWindow::on_pomodoroLengthSlider_sliderPressed()
@@ -314,6 +315,7 @@ void MainWindow::on_pomodoroLengthSlider_sliderReleased()
 void MainWindow::on_shortBreakLengthSlider_valueChanged(int value)
 {
 	this->ui->shortBreakLengthValueLbl->setText(tr("%n minute(s)", "", value));
+	short_break_duration = value;
 }
 
 void MainWindow::on_shortBreakLengthSlider_sliderPressed()
@@ -331,6 +333,7 @@ void MainWindow::on_shortBreakLengthSlider_sliderReleased()
 void MainWindow::on_longBreakLengthSlider_valueChanged(int value)
 {
 	this->ui->longBreakLengthValueLbl->setText(tr("%n minute(s)", "", value));
+	long_break_duration = value;
 }
 
 void MainWindow::on_longBreakLengthSlider_sliderPressed()
