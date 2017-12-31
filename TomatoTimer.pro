@@ -18,10 +18,12 @@ TARGET = TomatoTimer
 ICON = "resources/icon.icns"
 
 SOURCES += main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+    pomodoro.cpp
 
 HEADERS  += mainwindow.h \
-    notifications/notifications.h
+    notifications/notifications.h \
+    pomodoro.h
     systemsounds/systemsounds.h
 
 FORMS    += mainwindow.ui

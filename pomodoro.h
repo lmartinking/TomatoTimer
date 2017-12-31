@@ -5,23 +5,30 @@
 #include <QTimer>
 #include <QMap>
 
-enum PomodoroState {
-	STOPPED,
-	POMODORO,
-	SHORT_BREAK,
-	LONG_BREAK
-};
-
 
 class Pomodoro : public QObject
 {
 	Q_OBJECT
+
+public:
+	enum PomodoroState {
+		STOPPED,
+		POMODORO,
+		SHORT_BREAK,
+		LONG_BREAK
+	};
+
 	Q_ENUM(PomodoroState)
 
 public:
 	explicit Pomodoro(QObject *parent = nullptr);
 
 	PomodoroState currentState();
+
+	int		pomodoroDuration() { return pomodoro_duration; }
+	int		shortBreakDuration() { return short_break_duration; }
+	int		longBreakDuration() { return long_break_duration; }
+	int		pomodoroPerLongBreak() { return pomodoro_per_long_break; }
 
 signals:
 	void	stateTransition(PomodoroState oldState, PomodoroState newState);

@@ -15,14 +15,10 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 	setAttribute(Qt::WA_QuitOnClose, false); // Keep app around
 
-	pomodoro_count = 0;
-	pomodoro_per_long_break = 4;
+	pomodoro = new Pomodoro(this);
+	connect(pomodoro, &Pomodoro::stateTransition, this, &MainWindow::onStateTransition);
 
 	settings = new QSettings("com.irrationalidiom", "tomatotimer", this);
-
-	timer = new QTimer(this);
-	timer_type = TimerType::POMODORO;
-	connect(timer, &QTimer::timeout, this, &MainWindow::onTimerTimeout);
 
 	blink_timer = new QTimer(this);
 	connect(blink_timer, &QTimer::timeout, this, &MainWindow::onBlinkTimerTimeout);
@@ -40,7 +36,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	qDebug() << "timer: " << timer;
 	qDebug() << "timer type: " << timer_type;
 
-	ShowNotification("Tomato Timer", "", "Tomato Timer is now running");
+	if (notifications_enabled)
+		ShowNotification("Tomato Timer", "", "Tomato Timer is now running");
 }
 
 MainWindow::~MainWindow()
@@ -118,10 +115,10 @@ void MainWindow::loadSettings()
 {
 	qDebug() << "load settings";
 
-	pomodoro_duration = settings->value("pomodoro_duration", 25).toInt();
-	short_break_duration = settings->value("short_break_duration", 5).toInt();
-	long_break_duration = settings->value("long_break_duration", 15).toInt();
-	pomodoro_per_long_break = settings->value("pomodoro_per_long_break", 4).toInt();
+	pomodoro->setPomodoroDuration(settings->value("pomodoro_duration", 25).toInt());
+	pomodoro->setShortBreakDuration(settings->value("short_break_duration", 5).toInt());
+	pomodoro->setLongBreakDuration(settings->value("long_break_duration", 15).toInt());
+	pomodoro->setPomodoroPerLongBreak(settings->value("pomodoro_per_long_break", 4).toInt());
 
 	sound_enabled = settings->value("sound_enabled", true).toBool();
 	sound_name = settings->value("sound_name", "").toString();
@@ -135,10 +132,10 @@ void MainWindow::saveSettings()
 {
 	qDebug() << "save settings";
 
-	settings->setValue("pomodoro_duration", pomodoro_duration);
-	settings->setValue("short_break_duration", short_break_duration);
-	settings->setValue("long_break_duration", long_break_duration);
-	settings->setValue("pomodoro_per_long_break", pomodoro_per_long_break);
+	settings->setValue("pomodoro_duration", pomodoro->pomodoroDuration());
+	settings->setValue("short_break_duration", pomodoro->shortBreakDuration());
+	settings->setValue("long_break_duration", pomodoro->longBreakDuration());
+	settings->setValue("pomodoro_per_long_break", pomodoro->pomodoroPerLongBreak());
 
 	settings->setValue("sound_enabled", sound_enabled);
 	settings->setValue("sound_name", sound_name);
@@ -153,107 +150,18 @@ void MainWindow::saveSettings()
 void MainWindow::doTimerStart()
 {
 	qDebug() << "Timer start";
-
-	int interval = 0;
-	QString icon = ":/resources/tomato_desat.png";
-	QString notification_icon = "";
-	QString message = "";
-
-	if (timer_type == POMODORO)
-	{
-		interval = pomodoro_duration;
-		icon = ":/resources/tomato.png";
-		message = "Pomodoro started";
-	}
-	else if (timer_type == SHORT_BREAK)
-	{
-		interval = short_break_duration;
-		icon = ":/resources/tomato_green.png";
-		message = "Time for a short break";
-	}
-	else if (timer_type == LONG_BREAK)
-	{
-		interval = long_break_duration;
-		icon = ":/resources/tomato_blue.png";
-		message = "Time for a longer break";
-	}
-
-	if (interval) interval = 1; // FUDGE
-
-	tray_icon->setIcon(QIcon(icon));
-	blink_icon[0] = QIcon(icon);
-	blink_icon[1] = QIcon(":/resources/tomato_desat_trans.png");
-
-	if (interval)
-	{
-		qDebug() << "interval: " << interval;
-		timer->setSingleShot(true);
-		timer->start(interval * 60 * 1000);
-	}
-
-	if (message.length())
-	{
-		if (notifications_enabled)
-			ShowNotification("Tomato Timer", nullptr, message.toLocal8Bit().data());
-
-		if (sound_enabled)
-			PlaySystemSound(sound_name);
-
-		if (blink_enabled)
-		{
-			blink_count = 0;
-			blink_timer->setInterval(1000);
-			blink_timer->setSingleShot(false);
-			blink_timer->start();
-		}
-	}
+	pomodoro->start();
 }
 
 void MainWindow::doTimerStop()
 {
 	qDebug() << "Timer stop";
-
-	tray_icon->setIcon(QIcon(":/resources/tomato_desat.png"));
-	timer->stop();
+	pomodoro->stop();
 }
 
 void MainWindow::doTimerPause()
 {
 	qDebug() << "Timer pause";
-}
-
-void MainWindow::onTimerTimeout()
-{
-	qDebug() << "Timer timeout";
-
-	if (timer_type == POMODORO)
-	{
-		pomodoro_count++;
-
-		qDebug() << "pomodoro count: " << pomodoro_count;
-
-		if (pomodoro_count == pomodoro_per_long_break)
-		{
-			pomodoro_count = 0;
-			timer_type = LONG_BREAK;
-		}
-		else
-		{
-			timer_type = SHORT_BREAK;
-		}
-	}
-	else if (timer_type == SHORT_BREAK)
-	{
-		timer_type = POMODORO;
-	}
-	else if (timer_type == LONG_BREAK)
-	{
-		timer_type = POMODORO;
-	}
-
-	qDebug() << "timer type now: " << timer_type;
-
-	doTimerStart();
 }
 
 void MainWindow::onBlinkTimerTimeout()
@@ -274,11 +182,11 @@ void MainWindow::onBlinkTimerTimeout()
 
 void MainWindow::doShowPrefs()
 {
-	this->ui->shortBreakLengthSlider->setValue(short_break_duration);
-	this->ui->longBreakLengthSlider->setValue(long_break_duration);
-	this->ui->pomodoroLengthSlider->setValue(pomodoro_duration);
+	this->ui->shortBreakLengthSlider->setValue(pomodoro->shortBreakDuration());
+	this->ui->longBreakLengthSlider->setValue(pomodoro->longBreakDuration());
+	this->ui->pomodoroLengthSlider->setValue(pomodoro->pomodoroDuration());
 
-	this->ui->pomodoroToLongBreakSpinner->setValue(pomodoro_per_long_break);
+	this->ui->pomodoroToLongBreakSpinner->setValue(pomodoro->pomodoroPerLongBreak());
 
 	on_longBreakLengthSlider_sliderReleased();
 	on_pomodoroLengthSlider_sliderReleased();
@@ -299,6 +207,75 @@ void MainWindow::doQuit()
 	qDebug() << "do quit";
 
 	qApp->quit();
+}
+
+void MainWindow::onStateTransition(Pomodoro::PomodoroState oldState, Pomodoro::PomodoroState newState)
+{
+	qDebug() << "old state:" << oldState;
+	qDebug() << "new state:" << newState;
+
+	QString icon = ":/resources/tomato_desat.png";
+	QString message = "";
+	QString menuMessage = "";
+
+	switch (newState)
+	{
+		case Pomodoro::POMODORO:
+		{
+			icon = ":/resources/tomato.png";
+			message = "Pomodoro started";
+			menuMessage = "Pomodoro {0}";
+		} break;
+
+		case Pomodoro::STOPPED:
+		{
+			message = "Pomodoro stopped";
+			menuMessage = "Pomodoro stopped";
+		} break;
+
+		case Pomodoro::SHORT_BREAK:
+		{
+			icon = ":/resources/tomato_green.png";
+			message = "Time for a short break";
+			menuMessage = "Short break {0}";
+		} break;
+
+		case Pomodoro::LONG_BREAK:
+		{
+			icon = ":/resources/tomato_blue.png";
+			message = "Time for a longer break";
+			menuMessage = "Long break {0}";
+		} break;
+	}
+
+	blink_timer->stop();
+
+	tray_icon->setIcon(QIcon(icon));
+
+	blink_icon[0] = QIcon(icon);
+	blink_icon[1] = QIcon(":/resources/tomato_desat_trans.png");
+
+	if (menuMessage.length())
+	{
+		state_action->setText(menuMessage);
+	}
+
+	if (message.length())
+	{
+		if (notifications_enabled)
+			ShowNotification("Tomato Timer", nullptr, message.toLocal8Bit().data());
+
+		if (sound_enabled)
+			PlaySystemSound(sound_name);
+
+		if (blink_enabled && newState != Pomodoro::STOPPED)
+		{
+			blink_count = 0;
+			blink_timer->setInterval(1000);
+			blink_timer->setSingleShot(false);
+			blink_timer->start();
+		}
+	}
 }
 
 bool MainWindow::event(QEvent* event)
@@ -332,7 +309,7 @@ void MainWindow::customEvent(QEvent* event)
 void MainWindow::on_pomodoroLengthSlider_valueChanged(int value)
 {
 	this->ui->pomodoroLengthValueLbl->setText(tr("%n minute(s)", "", value));
-	pomodoro_duration = value;
+	pomodoro->setPomodoroDuration(value);
 }
 
 void MainWindow::on_pomodoroLengthSlider_sliderPressed()
@@ -350,7 +327,7 @@ void MainWindow::on_pomodoroLengthSlider_sliderReleased()
 void MainWindow::on_shortBreakLengthSlider_valueChanged(int value)
 {
 	this->ui->shortBreakLengthValueLbl->setText(tr("%n minute(s)", "", value));
-	short_break_duration = value;
+	pomodoro->setShortBreakDuration(value);
 }
 
 void MainWindow::on_shortBreakLengthSlider_sliderPressed()
@@ -368,7 +345,7 @@ void MainWindow::on_shortBreakLengthSlider_sliderReleased()
 void MainWindow::on_longBreakLengthSlider_valueChanged(int value)
 {
 	this->ui->longBreakLengthValueLbl->setText(tr("%n minute(s)", "", value));
-	long_break_duration = value;
+	pomodoro->setLongBreakDuration(value);
 }
 
 void MainWindow::on_longBreakLengthSlider_sliderPressed()
@@ -381,13 +358,12 @@ void MainWindow::on_longBreakLengthSlider_sliderReleased()
 	this->ui->longBreakLengthValueLbl->hide();
 }
 
-// ---
-
-
 void MainWindow::on_pomodoroToLongBreakSpinner_valueChanged(int value)
 {
-	pomodoro_per_long_break = value;
+	pomodoro->setPomodoroPerLongBreak(value);
 }
+
+// ---
 
 /*
  * Preferences - Notifications Tab

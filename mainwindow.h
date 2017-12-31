@@ -9,21 +9,15 @@
 #include <QMenu>
 #include <QUuid>
 
+#include "pomodoro.h"
+
 namespace Ui {
 	class MainWindow;
 }
 
-
-enum TimerType {
-	POMODORO,
-	SHORT_BREAK,
-	LONG_BREAK
-};
-
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
-	Q_ENUM(TimerType)
 
 public:
 	explicit MainWindow(QWidget *parent = 0);
@@ -42,11 +36,12 @@ private slots:
 	void	doTimerStop();
 	void	doTimerPause();
 
-	void	onTimerTimeout();
 	void	onBlinkTimerTimeout();
 
 	void	doShowPrefs();
 	void	doQuit();
+
+	void	onStateTransition(Pomodoro::PomodoroState oldState, Pomodoro::PomodoroState newState);
 
 	void	on_pomodoroToLongBreakSpinner_valueChanged(int arg1);
 	void	on_longBreakLengthSlider_valueChanged(int value);
@@ -77,20 +72,14 @@ private:
 	QSystemTrayIcon*	tray_icon;
 	QMenu*				tray_menu;
 
-	int				pomodoro_duration;
-	int				short_break_duration;
-	int				long_break_duration;
-	int				pomodoro_per_long_break;
+	QAction*			state_action;
 
-	int				pomodoro_count;
+	Pomodoro*			pomodoro;
 
 	bool			sound_enabled;
 	QString			sound_name;
 
 	bool			notifications_enabled;
-
-	QTimer*			timer;
-	TimerType		timer_type;
 
 	bool			blink_enabled;
 	QTimer*			blink_timer;

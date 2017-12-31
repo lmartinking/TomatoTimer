@@ -1,3 +1,5 @@
+#include <QDebug>
+
 #include "pomodoro.h"
 
 
@@ -10,7 +12,7 @@ Pomodoro::Pomodoro(QObject *parent) : QObject(parent)
 	resetToDefaults();
 }
 
-PomodoroState Pomodoro::currentState()
+Pomodoro::PomodoroState Pomodoro::currentState()
 {
 	return state;
 }
@@ -128,6 +130,7 @@ void Pomodoro::timeout()
 
 	if (nextInterval)
 	{
+		qDebug() << "next interval in: " << nextInterval << "minutes";
 		timer->setSingleShot(true);
 		timer->start(nextInterval * 60 * 1000);
 	}
