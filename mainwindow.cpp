@@ -31,10 +31,13 @@ MainWindow::MainWindow(QWidget *parent) :
 	buildTrayIcon();
 	buildSounds();
 
-	tray_icon->show();
+	connect(tray_menu, &QMenu::aboutToShow, this, &MainWindow::onMenuShow);
+	connect(tray_menu, &QMenu::aboutToHide, this, &MainWindow::onMenuHide);
 
-	qDebug() << "timer: " << timer;
-	qDebug() << "timer type: " << timer_type;
+	tray_menu_timer = new QTimer(this);
+	connect(tray_menu_timer, &QTimer::timeout, this, &MainWindow::onMenuTimerTick);
+
+	tray_icon->show();
 
 	if (notifications_enabled)
 		ShowNotification("Tomato Timer", "", "Tomato Timer is now running");
@@ -51,6 +54,11 @@ void MainWindow::buildMenu()
 {
 	QMenu* m = new QMenu(this);
 
+	auto stateAction = new QAction("Pomodoro Stopped", nullptr);
+	stateAction->setEnabled(false);
+	Q_ASSERT(! state_action);
+	state_action = stateAction;
+
 	auto startTimerAction = new QAction("Start Pomodoro", nullptr);
 	startTimerAction->setIcon(QIcon(":/resources/tomato.png"));
 	connect(startTimerAction, &QAction::triggered, this, &MainWindow::doTimerStart);
@@ -65,6 +73,8 @@ void MainWindow::buildMenu()
 	auto quitAction = new QAction("Quit", nullptr);
 	connect(quitAction, &QAction::triggered, this, &MainWindow::doQuit);
 
+	m->addAction(stateAction);
+	m->addSeparator();
 	m->addAction(startTimerAction);
 	m->addAction(stopTimerAction);
 	m->addSeparator();
@@ -224,7 +234,7 @@ void MainWindow::onStateTransition(Pomodoro::PomodoroState oldState, Pomodoro::P
 		{
 			icon = ":/resources/tomato.png";
 			message = "Pomodoro started";
-			menuMessage = "Pomodoro {0}";
+			menuMessage = "Pomodoro %1";
 		} break;
 
 		case Pomodoro::STOPPED:
@@ -237,14 +247,14 @@ void MainWindow::onStateTransition(Pomodoro::PomodoroState oldState, Pomodoro::P
 		{
 			icon = ":/resources/tomato_green.png";
 			message = "Time for a short break";
-			menuMessage = "Short break {0}";
+			menuMessage = "Short break %1";
 		} break;
 
 		case Pomodoro::LONG_BREAK:
 		{
 			icon = ":/resources/tomato_blue.png";
 			message = "Time for a longer break";
-			menuMessage = "Long break {0}";
+			menuMessage = "Long break %1";
 		} break;
 	}
 
@@ -257,6 +267,7 @@ void MainWindow::onStateTransition(Pomodoro::PomodoroState oldState, Pomodoro::P
 
 	if (menuMessage.length())
 	{
+		state_action_text = menuMessage;
 		state_action->setText(menuMessage);
 	}
 
@@ -276,6 +287,37 @@ void MainWindow::onStateTransition(Pomodoro::PomodoroState oldState, Pomodoro::P
 			blink_timer->start();
 		}
 	}
+}
+
+void MainWindow::onMenuShow()
+{
+	qDebug() << "Menu show";
+
+	tray_menu_timer->setSingleShot(false);
+	tray_menu_timer->setInterval(1000);
+	tray_menu_timer->start();
+	onMenuTimerTick();
+}
+
+void MainWindow::onMenuHide()
+{
+	qDebug() << "Menu hide";
+	tray_menu_timer->stop();
+}
+
+void MainWindow::onMenuTimerTick()
+{
+	if (! state_action_text.contains("%1"))
+		return;
+
+	int seconds = pomodoro->nextTimeout();
+	int minutes = seconds / 60;
+	int remSeconds = seconds % 60;
+
+	auto timeStr = QString("%1:%2").arg(minutes, 2, 10, QChar('0')).arg(remSeconds, 2, 10, QChar('0'));
+
+	QString text = state_action_text.arg(timeStr);
+	state_action->setText(text);
 }
 
 bool MainWindow::event(QEvent* event)

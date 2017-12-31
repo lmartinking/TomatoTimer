@@ -43,6 +43,10 @@ private slots:
 
 	void	onStateTransition(Pomodoro::PomodoroState oldState, Pomodoro::PomodoroState newState);
 
+	void	onMenuShow();
+	void	onMenuHide();
+	void	onMenuTimerTick();
+
 	void	on_pomodoroToLongBreakSpinner_valueChanged(int arg1);
 	void	on_longBreakLengthSlider_valueChanged(int value);
 	void	on_shortBreakLengthSlider_valueChanged(int value);
@@ -71,8 +75,10 @@ private:
 
 	QSystemTrayIcon*	tray_icon;
 	QMenu*				tray_menu;
+	QTimer*				tray_menu_timer;
 
 	QAction*			state_action;
+	QString				state_action_text;
 
 	Pomodoro*			pomodoro;
 

@@ -25,6 +25,8 @@ public:
 
 	PomodoroState currentState();
 
+	int		nextTimeout();
+
 	int		pomodoroDuration() { return pomodoro_duration; }
 	int		shortBreakDuration() { return short_break_duration; }
 	int		longBreakDuration() { return long_break_duration; }

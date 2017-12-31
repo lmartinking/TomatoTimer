@@ -17,6 +17,11 @@ Pomodoro::PomodoroState Pomodoro::currentState()
 	return state;
 }
 
+int Pomodoro::nextTimeout()
+{
+	return timer->remainingTime() / 1000;
+}
+
 void Pomodoro::start()
 {
 	if (state == STOPPED)
