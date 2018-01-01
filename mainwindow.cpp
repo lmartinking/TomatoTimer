@@ -188,7 +188,7 @@ void MainWindow::onBlinkTimerTimeout()
 
 	if (blink_count < 10)
 	{
-		blink = !blink;
+		bool blink = blink_count % 2 == 0;
 		tray_icon->setIcon(blink_icon[blink ? 1 : 0]);
 	}
 	else

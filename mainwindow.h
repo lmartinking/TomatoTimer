@@ -92,7 +92,6 @@ private:
 
 	bool			blink_enabled;
 	QTimer*			blink_timer;
-	bool			blink;
 	int				blink_count;
 	QIcon			blink_icon[2];
 
