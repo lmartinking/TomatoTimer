@@ -15,14 +15,18 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 	setAttribute(Qt::WA_QuitOnClose, false); // Keep app around
 
+	// Engine
 	pomodoro = new Pomodoro(this);
 	connect(pomodoro, &Pomodoro::stateTransition, this, &MainWindow::onStateTransition);
 
+	// Settings
 	settings = new QSettings("com.irrationalidiom", "tomatotimer", this);
 
+	// Task bar blink
 	blink_timer = new QTimer(this);
 	connect(blink_timer, &QTimer::timeout, this, &MainWindow::onBlinkTimerTimeout);
 
+	// Bring up UI from designer...
 	ui->setupUi(this);
 
 	loadSettings();
