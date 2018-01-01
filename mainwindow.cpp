@@ -66,10 +66,14 @@ void MainWindow::buildMenu()
 	auto startTimerAction = new QAction("Start Pomodoro", nullptr);
 	startTimerAction->setIcon(QIcon(":/resources/tomato.png"));
 	connect(startTimerAction, &QAction::triggered, this, &MainWindow::doTimerStart);
+	Q_ASSERT(! start_action);
+	start_action = startTimerAction;
 
 	auto stopTimerAction = new QAction("Stop", nullptr);
 	stopTimerAction->setIcon(QIcon(":/resources/tomato_desat.png"));
 	connect(stopTimerAction, &QAction::triggered, this, &MainWindow::doTimerStop);
+	Q_ASSERT(! stop_action);
+	stop_action = stopTimerAction;
 
 	auto prefsAction = new QAction("Preferences...", nullptr);
 	connect(prefsAction, &QAction::triggered, this, &MainWindow::doShowPrefs);
@@ -296,6 +300,9 @@ void MainWindow::onStateTransition(Pomodoro::PomodoroState oldState, Pomodoro::P
 void MainWindow::onMenuShow()
 {
 	qDebug() << "Menu show";
+
+	start_action->setEnabled(pomodoro->currentState() == Pomodoro::STOPPED);
+	stop_action->setEnabled(pomodoro->currentState() != Pomodoro::STOPPED);
 
 	tray_menu_timer->setSingleShot(false);
 	tray_menu_timer->setInterval(1000);

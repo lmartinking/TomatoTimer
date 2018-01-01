@@ -80,6 +80,9 @@ private:
 	QAction*			state_action;
 	QString				state_action_text;
 
+	QAction*			start_action;
+	QAction*			stop_action;
+
 	Pomodoro*			pomodoro;
 
 	bool			sound_enabled;
