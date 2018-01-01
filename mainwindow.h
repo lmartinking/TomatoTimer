@@ -47,6 +47,8 @@ private slots:
 	void	onMenuHide();
 	void	onMenuTimerTick();
 
+	// Preferences panel
+
 	void	on_pomodoroToLongBreakSpinner_valueChanged(int arg1);
 	void	on_longBreakLengthSlider_valueChanged(int value);
 	void	on_shortBreakLengthSlider_valueChanged(int value);

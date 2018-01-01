@@ -334,6 +334,12 @@ void MainWindow::onMenuTimerTick()
 bool MainWindow::event(QEvent* event)
 {
 	//qDebug() << "main window event: " << event->type();
+
+	if (event->type() == QEvent::Hide)
+	{
+		saveSettings();
+	}
+
 	return QMainWindow::event(event);
 }
 

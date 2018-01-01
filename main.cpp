@@ -19,6 +19,7 @@ protected:
 	{
 		qDebug() << "app custom event: " << e->type();
 
+		// This is here soley to propagate custom events
 		for (QWindow* w : this->topLevelWindows())
 		{
 			sendEvent(w, e);
