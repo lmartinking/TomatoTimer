@@ -51,7 +51,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="usesScrollButtons">
        <bool>false</bool>
@@ -99,6 +99,12 @@
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
+        <property name="invertedAppearance">
+         <bool>false</bool>
+        </property>
+        <property name="invertedControls">
+         <bool>false</bool>
+        </property>
         <property name="tickPosition">
          <enum>QSlider::NoTicks</enum>
         </property>
@@ -114,6 +120,11 @@
           <width>171</width>
           <height>21</height>
          </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>13</pointsize>
+         </font>
         </property>
         <property name="text">
          <string>Pomodoro:</string>
@@ -131,6 +142,11 @@
           <height>21</height>
          </rect>
         </property>
+        <property name="font">
+         <font>
+          <pointsize>13</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>Short break:</string>
         </property>
@@ -146,6 +162,11 @@
           <width>171</width>
           <height>21</height>
          </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>13</pointsize>
+         </font>
         </property>
         <property name="text">
          <string>Long break:</string>
@@ -336,11 +357,16 @@
        <widget class="QLabel" name="label_10">
         <property name="geometry">
          <rect>
-          <x>30</x>
+          <x>0</x>
           <y>240</y>
-          <width>171</width>
+          <width>201</width>
           <height>21</height>
          </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>13</pointsize>
+         </font>
         </property>
         <property name="text">
          <string>Pomodoros to a long break:</string>
@@ -363,6 +389,9 @@
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
         </property>
         <property name="minimum">
          <number>1</number>
@@ -495,6 +524,17 @@
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>pomodoroLengthSlider</tabstop>
+  <tabstop>shortBreakLengthSlider</tabstop>
+  <tabstop>longBreakLengthSlider</tabstop>
+  <tabstop>pomodoroToLongBreakSpinner</tabstop>
+  <tabstop>playSoundCheck</tabstop>
+  <tabstop>playSoundCombo</tabstop>
+  <tabstop>displayNotificationsCheck</tabstop>
+  <tabstop>blinkIconCheck</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
