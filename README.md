@@ -1,7 +1,9 @@
 Tomato Timer
 ============
 
-A simple Pomodoro app which lives in the menu bar.
+🍅 A simple Pomodoro app which lives in the menu bar. 
+
+Download MacOS binaries from [releases](https://github.com/lmartinking/TomatoTimer/releases).
 
 ![](./screenshots/tomato%20timer%20menu.png)
 
