@@ -7,6 +7,13 @@ Download MacOS binaries from [releases](https://github.com/lmartinking/TomatoTim
 
 ![](./screenshots/tomato%20timer%20menu.png)
 
+The icon will also change:
+
+![Pomodor](./screenshots/tomato%20timer%20icon%20red.png)
+![Short Break](./screenshots/tomato%20timer%20icon%20green.png)
+![Long Break](./screenshots/tomato%20timer%20icon%20blue.png)
+![Stopped](./screenshots/tomato%20timer%20icon%20inactive.png)
+
 It also supports sound and visual notifications:
 
 ![](./screenshots/tomato%20timer%20notification.png)
