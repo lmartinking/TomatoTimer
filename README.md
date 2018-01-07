@@ -25,7 +25,11 @@ And some degree of control:
 
 ## Building
 
-To keep things simple, you just need Qt Creator and Qt 5.7.
+To keep things simple, you just need Qt Creator and at least Qt 5.7.
+
+Open the project (`TomatoTimer.pro`) with Qt Creator, configure against your "Kit", and then build.
+
+Qt installers for Mac, Linux & Windows can be downloaded from [Qt.io](https://www.qt.io/download-qt-installer).
 
 ## Todo
 
