@@ -32,6 +32,10 @@ MainWindow::MainWindow(QWidget *parent) :
 	// Bring up UI from designer...
 	ui->setupUi(this);
 
+#ifdef Q_OS_UNIX
+	tweakUI();
+#endif // Q_OS_UNIX
+
 	loadSettings();
 
 	buildMenu();
@@ -55,6 +59,31 @@ MainWindow::~MainWindow()
 	saveSettings();
 
 	delete ui;
+}
+
+void MainWindow::tweakUI() {
+	// Reset font sizes
+	{
+		QFont normalFont;
+		for(QLabel* obj : this->findChildren<QLabel*>()) {
+			QLabel& l = *obj;
+			auto f = l.font();
+			if (f.pointSize() == 10) {
+				f.setPointSize(normalFont.pointSize() - 1);
+			} else {
+				f.setPointSize(normalFont.pointSize());
+			}
+			l.setFont(f);
+		}
+	}
+	// Tweak position
+	{
+		QComboBox* sound = this->findChild<QComboBox*>("playSoundCombo");
+		if (sound) {
+			auto g = sound->geometry();
+			sound->setGeometry(QRect(g.left() + 30, g.top() + 5, g.width(), g.height() - 10));
+		}
+	}
 }
 
 void MainWindow::buildMenu()

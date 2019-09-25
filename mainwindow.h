@@ -24,6 +24,8 @@ public:
 	~MainWindow();
 
 private:
+	void	tweakUI();
+
 	void	buildMenu();
 	void	buildTrayIcon();
 	void	buildSounds();
