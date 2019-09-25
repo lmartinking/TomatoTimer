@@ -12,7 +12,7 @@
 class TotatoTimeApplication : public QApplication
 {
 public:
-	TotatoTimeApplication(int argc, char* argv[]) : QApplication(argc, argv) {}
+	TotatoTimeApplication(int& argc, char* argv[]) : QApplication(argc, argv) {}
 
 protected:
 	void customEvent(QEvent* e)

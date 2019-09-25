@@ -37,3 +37,8 @@ mac {
         notifications/notifications_osx.mm \
         systemsounds/systemsounds_osx.mm
 }
+
+linux {
+    SOURCES += systemsounds/systemsounds_unix.cpp
+    SOURCES += notifications/notifications_unix.cpp
+}

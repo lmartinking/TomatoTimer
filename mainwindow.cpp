@@ -11,7 +11,10 @@
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
-	ui(new Ui::MainWindow)
+	ui(new Ui::MainWindow),
+	state_action(nullptr),
+	start_action(nullptr),
+	stop_action(nullptr)
 {
 	setAttribute(Qt::WA_QuitOnClose, false); // Keep app around
 
