@@ -39,6 +39,7 @@ mac {
 }
 
 linux {
+    QT += dbus
     SOURCES += systemsounds/systemsounds_unix.cpp
     SOURCES += notifications/notifications_unix.cpp
 }
